@@ -28,11 +28,11 @@ For cgo, which is transitioning in, we need the environment variables set:
 
 `docker pull dfinity/build-env`
 
-`git clone git@github.com:dfinity/beacon.git`
+`git clone git@github.com:timohanke/rb.git`
 
 `cd beacon`
 
-```docker run --rm -it -v `pwd`/go:/go dfinity/build-env go run test.go```
+```docker run --rm -it -v `pwd`/go:/go dfinity/build-env go run sim.go```
 
 ## Run
 
