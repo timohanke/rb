@@ -41,7 +41,7 @@ func (id *Id) SetStr(s string) error {
 
 func (id *Id) Set(v []uint64) error {
 	if len(v) != 4 {
-		return fmt.Errorf("bad size", len(v))
+		return fmt.Errorf("bad size (%d), expected size 4", len(v))
 	}
 	C.blsIdSet(id.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
 	return nil
@@ -75,7 +75,7 @@ func (sec *SecretKey) SetStr(s string) error {
 
 func (sec *SecretKey) SetArray(v []uint64) error {
 	if len(v) != 4 {
-		return fmt.Errorf("bad size", len(v))
+		return fmt.Errorf("bad size (%d), expected size=4", len(v))
 	}
 	C.blsSecretKeySetArray(sec.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
 	return nil
