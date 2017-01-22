@@ -7,7 +7,7 @@ Random beacon simulator
 
 `git clone git@github.com:timohanke/rb.git`
 
-`cd beacon`
+`cd rb`
 
 ```docker run --rm -it -v `pwd`/go:/go dfinity/build-env go run sim.go```
 
