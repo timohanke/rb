@@ -1,7 +1,33 @@
 # beacon
 Random beacon simulator
 
+## Build
+
+`docker pull dfinity/build-env`
+
+`git clone git@github.com:timohanke/rb.git`
+
+`cd rb`
+
+```docker run --rm -it -v `pwd`/go:/go dfinity/build-env go run sim.go```
+
+### Run linter(s)
+
+```docker run --rm -it -v `pwd`/go:/go dfinity/build-env gometalinter ./...```
+
+## Run
+
+### Simulation
+
+`go run sim.go`
+
+### Cgo test and benchmark
+
+`go run test.go`
+ 
 ## Dependencies
+
+All dependencies below are taken care off in the docker image `dfinity/build-env`.
 
 ### go-ethereum
 
@@ -23,24 +49,4 @@ For cgo, which is transitioning in, we need the environment variables set:
 `export LIBRARY_PATH=/build/herumi/bls/lib:/build/herumi/mcl/lib:$LIBRARY_PATH`
 
 `export CPATH=/build/herumi/bls/include:$CPATH`
- 
-## Build
-
-`docker pull dfinity/build-env`
-
-`git clone git@github.com:dfinity/beacon.git`
-
-`cd beacon`
-
-```docker run --rm -it -v `pwd`/go:/go dfinity/build-env go run test.go```
-
-## Run
-
-### Simulation
-
-`go run sim.go`
-
-### Cgo test and benchmark
-
-`go run test.go`
  
