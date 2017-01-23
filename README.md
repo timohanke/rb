@@ -19,7 +19,7 @@ Run all tests:
 
 As of Jan 22 (EOD) this runs without warnings:
 
-```gometalinter --deadline=10s --disable=gas --disable=gocyclo --disable=gotype --disable=golint --disable=interfacer ./...```
+```gometalinter --deadline=10s --disable=gas --disable=gocyclo --disable=gotype --disable=interfacer ./...```
 
 ## Run
 
