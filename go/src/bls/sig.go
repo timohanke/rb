@@ -19,6 +19,7 @@ import (
 // #include <bls2/include/bls.h>
 import "C"
 
+// CTest --
 func CTest() {
 	C.FooInit()
 	return
@@ -26,32 +27,40 @@ func CTest() {
 */
 
 // Debugging counters
-var sig_gen_calls, sig_verify_calls, sig_agg_calls, sig_agg_len, sig_recover_calls, sig_recover_len int
+var sigGenCalls, sigVerifyCalls, sigAggCalls, sigAggLen, sigRecoverCalls, sigRecoverLen int
 
+// SignatureCtrs --
 func SignatureCtrs() string {
-	return fmt.Sprintf("(sig:gen,ver,rec) %d,%d,%d/%d", sig_gen_calls, sig_verify_calls, sig_recover_calls, sig_recover_len)
+	return fmt.Sprintf("(sig:gen,ver,rec) %d,%d,%d/%d", sigGenCalls, sigVerifyCalls, sigRecoverCalls, sigRecoverLen)
 }
 
 /// Crypto 
 // types
+
+// Signature --
 type Signature struct {
 	value []byte
 }
 
+// SignatureMap --
 type SignatureMap map[common.Address]Signature
 
 // Conversion
+
+// Rand --
 func (sig Signature) Rand() Rand {
 	return RandFromBytes(sig.value)
 }
 
+// String --
 func (sig Signature) String() string {
 	return string(sig.value)
 }
 
+// Sign --
 // Signing 
 func Sign(sec Seckey, msg []byte) (sig Signature) {
-	sig_gen_calls += 1
+	sigGenCalls++
 	// call bls_tool
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	cmd := exec.Command("bls_tool.exe","sign")
@@ -64,9 +73,10 @@ func Sign(sec Seckey, msg []byte) (sig Signature) {
 	return 
 }
 
+// VerifySig --
 // Verification
 func VerifySig(pub Pubkey, msg []byte, sig Signature) bool {
-	sig_verify_calls += 1
+	sigVerifyCalls++
 	// call bls_tool
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	cmd := exec.Command("bls_tool.exe","verify")
@@ -76,25 +86,24 @@ func VerifySig(pub Pubkey, msg []byte, sig Signature) bool {
 		fmt.Printf("bls_tool.exe verify: %v\n%s", err, string(stderr.Bytes()))
 	}
 	val, _ := strconv.Atoi(strings.TrimRight(stdout.String(),"\n")) 
-	if val > 0 {
-		return true
-	} else {
-		return false
-	}
+	return val > 0 
 }
 
+// VerifyAggregateSig --
 func VerifyAggregateSig(pubs []Pubkey, msg []byte, asig Signature) bool {
 	return VerifySig(AggregatePubkeys(pubs), msg, asig)
 }
 
+// BatchVerify --
 func BatchVerify(pubs []Pubkey, msg []byte, sigs []Signature) bool {
 	return VerifyAggregateSig(pubs, msg, AggregateSigs(sigs)) 
 }
 	
+// AggregateSigs --
 // Aggregate multiple into one by summing up
 func AggregateSigs(sigs []Signature) (sig Signature) {
-	sig_agg_calls += 1
-	sig_agg_len += len(sigs)
+	sigAggCalls++
+	sigAggLen += len(sigs)
 	// call bls_tool
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	cmd := exec.Command("bls_tool.exe","aggregate-sig")
@@ -110,10 +119,11 @@ func AggregateSigs(sigs []Signature) (sig Signature) {
 	return 
 }
 
+// RecoverSignature --
 // Recover master from shares through Lagrange interpolation
 func RecoverSignature(sigs []Signature, ids []*big.Int) (sig Signature) {
-	sig_recover_calls += 1
-	sig_recover_len += len(sigs)
+	sigRecoverCalls++
+	sigRecoverLen += len(sigs)
 	// call bls_tool
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	cmd := exec.Command("bls_tool.exe","recover-sig")
@@ -130,6 +140,7 @@ func RecoverSignature(sigs []Signature, ids []*big.Int) (sig Signature) {
 	return 
 }
 
+// RecoverSignatureByMap --
 func RecoverSignatureByMap(m SignatureMap, k int) (sec Signature) {
 	ids := make([]*big.Int, k)
 	sigs := make([]Signature, k)

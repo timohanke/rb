@@ -24,7 +24,7 @@ func testRecoverSecretKey() {
 
 	n := k
 	secVec := make([]blscgo.SecretKey, n)
-	idVec := make([]blscgo.Id, n)
+	idVec := make([]blscgo.ID, n)
 	var err error
 	for i := 0; i < n; i++ {
 		err = idVec[i].Set([]uint64{1, 2, 3, uint64(i)})
@@ -57,7 +57,7 @@ func testSign() {
 	secVec := make([]blscgo.SecretKey, n)
 	pubVec := make([]blscgo.PublicKey, n)
 	signVec := make([]blscgo.Sign, n)
-	idVec := make([]blscgo.Id, n)
+	idVec := make([]blscgo.ID, n)
 
 	var err error
 	for i := 0; i < n; i++ {
@@ -139,12 +139,12 @@ func main() {
 	blscgo.Init()
 	var err error
 	{
-		var id blscgo.Id
+		var id blscgo.ID
 		err = id.Set([]uint64{4, 3, 2, 1})
 		if err != nil { log.Fatal(err) }
 
 		fmt.Println("id :", id)
-		var id2 blscgo.Id
+		var id2 blscgo.ID
 		err = id2.SetStr(id.String())
 		if err != nil { log.Fatal(err) }
 		fmt.Println("id2:", id2)

@@ -8,12 +8,14 @@ import (
 //	"github.com/davecgh/go-spew/spew"
 )
 
+// State -- encodes the state of the chain (state of 1 block)
 type State struct {
 	nodes  map[common.Address]Node
 	groups map[common.Address]Group
 	sig    bls.Signature
 }
 
+// NewState --
 func NewState() State {
 	s := State{}
 	s.nodes = make(map[common.Address]Node)
@@ -21,6 +23,7 @@ func NewState() State {
 	return s
 }
 
+// AddNode --
 func (s *State) AddNode(n Node) (valid bool) {
 	valid = n.hasPop()
 	if valid {
@@ -29,6 +32,7 @@ func (s *State) AddNode(n Node) (valid bool) {
 	return
 }
 
+// AddGroup --
 func (s *State) AddGroup(g Group) (valid bool) {
 	valid = g.isValid()
 	if valid {
@@ -37,25 +41,29 @@ func (s *State) AddGroup(g Group) (valid bool) {
 	return
 }
 
+// SetSignature --
 func (s *State) SetSignature(sig bls.Signature) {
 	s.sig = sig
 }
 
+// Rand --
 func (s State) Rand() bls.Rand {
 	return s.sig.Rand()
 }
 
+// NodeAddressList --
 func (s State) NodeAddressList() []common.Address {
 	// return a sorted list of addresses of all nodes
 	addr := make([]common.Address, len(s.nodes))
-	var i int = 0
-	for a, _ := range s.nodes {
+	var i int
+	for a := range s.nodes {
 		addr[i] = a
 		i++
 	}
 	return common2.SortAddresses(addr)
 }
 	
+// NewRandomGroup --
 func (s State) NewRandomGroup(r bls.Rand, n uint16) Group {
 	N := len(s.nodes) // need n <= N
 	fmt.Println(N, n)
@@ -70,10 +78,11 @@ func (s State) NewRandomGroup(r bls.Rand, n uint16) Group {
 	return Group{members, bls.Pubkey{}, 0}
 }
 
+// GroupAddressList --
 func (s State) GroupAddressList() []common.Address {
 	// return a sorted list of addresses of all groups
 	addr := make([]common.Address, len(s.groups))
-	var i int = 0
+	var i int
 	for k := range s.groups {
 		addr[i] = k
 		i++
@@ -81,19 +90,23 @@ func (s State) GroupAddressList() []common.Address {
 	return common2.SortAddresses(addr)
 }
 
+// SelectedGroupAddress --
 func (s State) SelectedGroupAddress() common.Address {
 	i := s.Rand().Modulo(len(s.groups))
 	return s.GroupAddressList()[i]
 }
 
+// GroupPubkey --
 func (s State) GroupPubkey(a common.Address) bls.Pubkey {
 	return s.groups[a].pub
 }
 	
+// SelectedGroupPubkey --
 func (s State) SelectedGroupPubkey() bls.Pubkey {
 	return s.GroupPubkey(s.SelectedGroupAddress())
 }
 
+// Log --
 func (s State) Log() {
 	fmt.Println("State: ")
 	fmt.Println("  sig:  ", s.sig)
@@ -110,6 +123,7 @@ func (s State) Log() {
 	fmt.Printf("    %d. % x\n", 1, s.SelectedGroupAddress())
 }
 
+// String --
 func (s State) String(long bool) string {
 	rnd := s.Rand().Bytes()
 	str := fmt.Sprintf("Stat: (sig)%.8s (rnd)%.2x (N)%d (m)%d (grp)%.2x", s.sig.String(), rnd, len(s.nodes), len(s.groups), s.SelectedGroupAddress()) 

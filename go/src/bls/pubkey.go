@@ -1,9 +1,5 @@
 package bls
 
-/* TODO
- - reduce dependency on ethereum code
-*/
-
 import (
 	"fmt"
 	"math/big"
@@ -17,27 +13,32 @@ import (
 
 /// Crypto 
 // Debugging counters
-var pub_gen_calls, pub_agg_calls, pub_agg_len, pub_share_calls, pub_share_len int
+var pubGenCalls, pubAggCalls, pubAggLen, pubShareCalls, pubShareLen int
 
+// PubkeyCtrs --
 func PubkeyCtrs() string {
-	return fmt.Sprintf("(pub:gen,shr,agg) %d,%d/%d,%d/%d", pub_gen_calls, pub_share_calls, pub_share_len, pub_agg_calls, pub_agg_len)
+	return fmt.Sprintf("(pub:gen,shr,agg) %d,%d/%d,%d/%d", pubGenCalls, pubShareCalls, pubShareLen, pubAggCalls, pubAggLen)
 }
 //var pubkey_ctr uint16 = 0
 
 // types
+
+// Pubkey -
 type Pubkey struct {
 //	trace       []byte
 	value       []byte
 //	y, x1, x2   big.Int
 }
 
+// PubkeyMap --
 type PubkeyMap map[common.Address]Pubkey
 
-// hash & id
+// Hash -- hash & id
 func (pub Pubkey) Hash() common.Hash {
 	return crypto.Keccak256Hash(pub.value)
 }
 
+// Address --
 func (pub Pubkey) Address() common.Address {
 	h := pub.Hash()
 	return common.BytesToAddress(h[:])
@@ -45,6 +46,7 @@ func (pub Pubkey) Address() common.Address {
 //	pubBytes := []byte("pubkey")
 }
 
+// String --
 func (pub Pubkey) String() string {
 	return string(pub.value)
 //	a := pub.Address()
@@ -52,8 +54,10 @@ func (pub Pubkey) String() string {
 }
 
 // Generation
+
+// PubkeyFromSeckey --
 func PubkeyFromSeckey(sec Seckey) (pub Pubkey) {
-	pub_gen_calls += 1
+	pubGenCalls++
 //	pubkey_ctr++
 //	pub.trace = append(sec.Bytes(),CtrBytes(pubkey_ctr)...)
 	// call bls_tool
@@ -67,10 +71,11 @@ func PubkeyFromSeckey(sec Seckey) (pub Pubkey) {
 	return 
 }
 
+// AggregatePubkeys --
 // Aggregate multiple into one by summing up
 func AggregatePubkeys(pubs []Pubkey) (pub Pubkey) {
-	pub_agg_calls += 1
-	pub_agg_len += len(pubs)
+	pubAggCalls++
+	pubAggLen += len(pubs)
 	// call bls_tool
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	cmd := exec.Command("bls_tool.exe","aggregate-pub")
@@ -86,10 +91,11 @@ func AggregatePubkeys(pubs []Pubkey) (pub Pubkey) {
 	return 
 }
 
+// SharePubkey --
 // Derive shares from master through polynomial substitution 
 func SharePubkey(mpub []Pubkey, i *big.Int) (pub Pubkey) {
-	pub_share_calls += 1
-	pub_share_len += len(mpub)
+	pubShareCalls++
+	pubShareLen += len(mpub)
 	// call bls_tool
 	stdout, stderr := new(bytes.Buffer), new(bytes.Buffer)
 	cmd := exec.Command("bls_tool.exe","share-pub")
@@ -106,6 +112,7 @@ func SharePubkey(mpub []Pubkey, i *big.Int) (pub Pubkey) {
 	return 
 }
 
+// RecoverPubkey --
 // Recover master from shares through Lagrange interpolation
 func RecoverPubkey(pubs []Pubkey, ids []big.Int) Pubkey {
 	return Pubkey{}

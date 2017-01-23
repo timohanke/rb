@@ -10,40 +10,51 @@ import (
 
 /// Crypto 
 // Logging counters
-var sec_agg_calls, sec_agg_len, sec_share_calls, sec_share_len, sec_recover_calls, sec_recover_len int 
+var secAggCalls, secAggLen, secShareCalls, secShareLen, secRecoverCalls, secRecoverLen int 
 
+// SeckeyCtrs --
 func SeckeyCtrs() string {
-	return fmt.Sprintf("(sec:agg,shr)     %d/%d,%d/%d", sec_agg_calls, sec_agg_len, sec_share_calls, sec_share_len)
+	return fmt.Sprintf("(sec:agg,shr)     %d/%d,%d/%d", secAggCalls, secAggLen, secShareCalls, secShareLen)
 }
 
 // Constants
-var R big.Int = Decimal2Big("16798108731015832284940804142231733909759579603404752749028378864165570215949")
+
+// R --
+var R = Decimal2Big("16798108731015832284940804142231733909759579603404752749028378864165570215949")
 
 // types
+
+// Seckey --
 type Seckey struct {
 	secret *big.Int
 }
 
+// SeckeyMap --
 type SeckeyMap map[common.Address]Seckey
 
+// Bytes --
 func (sec Seckey) Bytes() []byte {
 	// big endian
 	return sec.secret.Bytes()
 }
 
+// String --
 func (sec Seckey) String() string {
 	// big endian
 	return sec.secret.String()
 }
 
+// BigInt --
 func (sec Seckey) BigInt() *big.Int {
 	return sec.secret
 }
 
+// Hex --
 func (sec Seckey) Hex() string {
 	return fmt.Sprintf("0x%x", sec.secret)
 }
 
+// SecretKey --
 func (sec Seckey) SecretKey() (sk *blscgo.SecretKey) {
     sk = new(blscgo.SecretKey)
     err := sk.SetStr(sec.String())
@@ -52,6 +63,8 @@ func (sec Seckey) SecretKey() (sk *blscgo.SecretKey) {
 }
 
 // Constructors
+
+// SeckeyFromBytes --
 func SeckeyFromBytes(b []byte) (sec Seckey) {
 	// the secret has to be cut off at 31 bytes to make it smaller than the constant R
 	// R has 254 bits
@@ -64,23 +77,28 @@ func SeckeyFromBytes(b []byte) (sec Seckey) {
 	return
 }
 	
+// SeckeyFromRand --
 func SeckeyFromRand(seed Rand) Seckey {
 	return SeckeyFromBytes(seed.Bytes()) 
 }
 
+// SeckeyFromBigInt --
 func SeckeyFromBigInt(b *big.Int) (sec Seckey) {
 	sec.secret = b
 	return
 }
 
+// SeckeyFromInt --
 func SeckeyFromInt(i int64) (sec Seckey) {
 	sec.secret = big.NewInt(i)
 	return
 }
+
+// AggregateSeckeys --
 // Aggregate multiple seckeys into one by summing up, using native big.Ints
 func AggregateSeckeys(secs []Seckey) (sec Seckey) {
-	sec_agg_calls += 1
-	sec_agg_len += len(secs)
+	secAggCalls++
+	secAggLen += len(secs)
 	sec.secret = big.NewInt(0)
 	for _, s := range secs {
 		sec.secret.Add(sec.secret, s.secret)
@@ -89,11 +107,12 @@ func AggregateSeckeys(secs []Seckey) (sec Seckey) {
 	return 
 }
 
+// ShareSeckey --
 // Derive shares from master through polynomial substitution 
 // TODO make this function use PolynomialSubstitution
 func ShareSeckey(msec []Seckey, x *big.Int) (sec Seckey) {
-	sec_share_calls += 1
-	sec_share_len += len(msec)
+	secShareCalls++
+	secShareLen += len(msec)
 	sec.secret = big.NewInt(0)
 	// degree of polynomial, need k >= 1, i.e. len(msec) >= 2
 	k := len(msec)-1
@@ -109,14 +128,16 @@ func ShareSeckey(msec []Seckey, x *big.Int) (sec Seckey) {
 	return 
 }
 
+// ShareSeckeyByAddr --
 func ShareSeckeyByAddr(msec []Seckey, addr *common.Address) (sec Seckey) {
 	return ShareSeckey(msec, addr.Big())
 }
 
+// RecoverSeckey --
 // Recover master from shares through Lagrange interpolation
 func RecoverSeckey(secs []Seckey, ids []*big.Int) (sec Seckey) {
-	sec_recover_calls += 1
-	sec_recover_len += len(secs)
+	secRecoverCalls++
+	secRecoverLen += len(secs)
 	sec.secret = big.NewInt(0) 
 	k := len(secs)
 	// need len(ids) = k > 0 
@@ -145,6 +166,7 @@ func RecoverSeckey(secs []Seckey, ids []*big.Int) (sec Seckey) {
 	return 
 }
 
+// RecoverSeckeyByMap --
 func RecoverSeckeyByMap(m SeckeyMap, k int) (sec Seckey) {
 	ids := make([]*big.Int, k)
 	secs := make([]Seckey, k)
@@ -161,6 +183,7 @@ func RecoverSeckeyByMap(m SeckeyMap, k int) (sec Seckey) {
 }
 
 /*
+// RecoverSeckeyByAddr --
 func RecoverSeckeyByAddr(secs []Seckey, addrs []common.Address) (sec Seckey) {
 	ids := make([]*big.Int, len(addrs))
 	for i, a := range addrs {

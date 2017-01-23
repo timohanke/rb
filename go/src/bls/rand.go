@@ -8,10 +8,16 @@ import (
 )
 
 /// Rand
+
+// RandLength --
 const RandLength = 32 
+
+// Rand --
 type Rand [RandLength]byte
 
 // Constructors
+
+// RandFromBytes --
 func RandFromBytes(b []byte) (r Rand) {
 	h := crypto.Keccak256Hash(b)
         copy(r[:RandLength], h[:])
@@ -19,35 +25,42 @@ func RandFromBytes(b []byte) (r Rand) {
 }
 
 // Getters
+
+// Bytes --
 func (r Rand) Bytes() []byte {
 	return r[:]
 }
 
+// String --
 func (r Rand) String() string {
 	return string(r[:])
 }
 
-// Derived Randomness hierarchically
+// DerivedRand -- Derived Randomness hierarchically
 func (r Rand) DerivedRand(idx []byte) Rand {
 	// Keccak is not susceptible to length-extension-attacks, so we can use it as-is to implement an HMAC
 	return RandFromBytes(crypto.Keccak256(r.Bytes(), idx))
 }
 
 // Shortcuts to the derivation function
+
+// Ders --
 // ... by string
-func (seed Rand) Ders(s ...string) Rand {
-	r := seed
+func (r Rand) Ders(s ...string) Rand {
+	ri := r
 	for _, si := range s {
-		r = r.DerivedRand([]byte(si))
+		ri = ri.DerivedRand([]byte(si))
 	}
-	return r
+	return ri
 }
 
+// Deri --
 // ... by int
-func (seed Rand) Deri(i int) Rand {
-	return seed.Ders(strconv.Itoa(i))
+func (r Rand) Deri(i int) Rand {
+	return r.Ders(strconv.Itoa(i))
 }
 
+// Modulo --
 // Convert to a random integer from the interval [0,n-1]. 
 func (r Rand) Modulo(n int) int {
 	// modulo len(groups) with big.Ints (Mod method works on pointers)
@@ -56,11 +69,12 @@ func (r Rand) Modulo(n int) int {
         return int(b.Int64())
 }
 
+// RandomPerm --
 // Convert to a random permutation
 func (r Rand) RandomPerm(n int, k int) []int {
 	// modulo len(groups) with big.Ints (Mod method works on pointers)
 	l := make([]int, n)
-	for i,_ := range l {
+	for i := range l {
 		l[i] = i
 	}
 	for i := 0; i < k; i++ {

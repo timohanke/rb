@@ -5,6 +5,7 @@ import (
 	"sort"
 )
 
+// SortAddresses --
 func SortAddresses(addr []common.Address) []common.Address {
 	// sort addresses by converting to hex string and back
 	hex := make([]string, len(addr))
