@@ -1,8 +1,5 @@
 #!/usr/bin/bash
 
-# WORKROOT=$(pwd)
-# cd ${WORKROOT}
-
 # build
 docker run --rm -i -v $(pwd)/go:/go dfinity/build-env go run main.go
 if [ $? -ne 0 ];
