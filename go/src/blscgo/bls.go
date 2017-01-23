@@ -75,7 +75,7 @@ func (sec *SecretKey) SetStr(s string) error {
 
 func (sec *SecretKey) SetArray(v []uint64) error {
 	if len(v) != 4 {
-		return fmt.Errorf("bad size (%d), expected size=4", len(v))
+		return fmt.Errorf("bad size (%d), expected size 4", len(v))
 	}
 	C.blsSecretKeySetArray(sec.getPointer(), (*C.uint64_t)(unsafe.Pointer(&v[0])))
 	return nil
@@ -107,38 +107,6 @@ func GetMasterPublicKey(msk []SecretKey) (mpk []PublicKey) {
 	return mpk
 }
 
-func makeSecretKeyPointerArray(v []SecretKey) (pv []*C.blsSecretKey) {
-	n := len(v)
-	pv = make([]*C.blsSecretKey, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
-func makePublicKeyPointerArray(v []PublicKey) (pv []*C.blsPublicKey) {
-	n := len(v)
-	pv = make([]*C.blsPublicKey, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
-func makeSignPointerArray(v []Sign) (pv []*C.blsSign) {
-	n := len(v)
-	pv = make([]*C.blsSign, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
-func makeIdPointerArray(v []Id) (pv []*C.blsId) {
-	n := len(v)
-	pv = make([]*C.blsId, n)
-	for i := 0; i < n; i++ {
-		pv[i] = v[i].getPointer()
-	}
-	return pv
-}
 func (sec *SecretKey) Set(msk []SecretKey, id *Id) {
 	C.blsSecretKeySet(sec.getPointer(), msk[0].getPointer(), C.size_t(len(msk)), id.getPointer())
 }

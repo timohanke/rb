@@ -5,6 +5,7 @@ import "blscgo"
 import "bls"
 import "runtime"
 import "time"
+import "log"
 
 func verifyTrue(b bool) {
 	if !b {
@@ -24,8 +25,10 @@ func testRecoverSecretKey() {
 	n := k
 	secVec := make([]blscgo.SecretKey, n)
 	idVec := make([]blscgo.Id, n)
+	var err error
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{1, 2, 3, uint64(i)})
+		err = idVec[i].Set([]uint64{1, 2, 3, uint64(i)})
+		if err != nil { log.Fatal(err) }
 		secVec[i].Set(msk, &idVec[i])
 	}
 	// recover sec2 from secVec and idVec
@@ -56,8 +59,10 @@ func testSign() {
 	signVec := make([]blscgo.Sign, n)
 	idVec := make([]blscgo.Id, n)
 
+	var err error
 	for i := 0; i < n; i++ {
-		idVec[i].Set([]uint64{idTbl[i], 0, 0, 0})
+		err = idVec[i].Set([]uint64{idTbl[i], 0, 0, 0})
+		if err != nil { log.Fatal(err) }
 		fmt.Printf("idVec[%d]=%s\n", i, idVec[i].String())
 
 		secVec[i].Set(msk, &idVec[i])
@@ -132,17 +137,22 @@ func testComparison() {
 func main() {
 	fmt.Println("init")
 	blscgo.Init()
+	var err error
 	{
 		var id blscgo.Id
-		id.Set([]uint64{4, 3, 2, 1})
+		err = id.Set([]uint64{4, 3, 2, 1})
+		if err != nil { log.Fatal(err) }
+
 		fmt.Println("id :", id)
 		var id2 blscgo.Id
-		id2.SetStr(id.String())
+		err = id2.SetStr(id.String())
+		if err != nil { log.Fatal(err) }
 		fmt.Println("id2:", id2)
 	}
 	{
 		var sec blscgo.SecretKey
-		sec.SetArray([]uint64{1, 2, 3, 4})
+		err = sec.SetArray([]uint64{1, 2, 3, 4})
+		if err != nil { log.Fatal(err) }
 		fmt.Println("sec=", sec)
 	}
 

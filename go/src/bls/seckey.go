@@ -1,10 +1,11 @@
 package bls
 
 import (
-	"fmt"
-	"math/big"
-	"github.com/ethereum/go-ethereum/common"
 	"blscgo"
+	"fmt"
+	"github.com/ethereum/go-ethereum/common"
+	"log"
+	"math/big"
 )
 
 /// Crypto 
@@ -45,7 +46,8 @@ func (sec Seckey) Hex() string {
 
 func (sec Seckey) SecretKey() (sk *blscgo.SecretKey) {
     sk = new(blscgo.SecretKey)
-    sk.SetStr(sec.String())
+    err := sk.SetStr(sec.String())
+    if err != nil { log.Fatalln("Error in SecretKey conversion from blscgo.") }
     return
 }
 

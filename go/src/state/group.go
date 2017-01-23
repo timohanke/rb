@@ -1,11 +1,12 @@
 package state
 
 import (
+	"bls"
+	"common2"
 	"fmt"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto/sha3"
-	"bls"
-	"common2"
+	"log"
 )
 
 type Group struct {
@@ -34,8 +35,10 @@ func (g *Group) SetPubkey(pub bls.Pubkey, k uint16) {
 func (g Group) Address() (a common.Address) {
 	// hash of all member addresses
 	d := sha3.NewKeccak256()
+	var err error
         for _, addr := range common2.SortAddresses(g.members) {
-                d.Write(addr[:])
+                _, err = d.Write(addr[:])
+		if err != nil { log.Fatalln("Error when calling Keccak256") }
         }
 
 	var h common.Hash
