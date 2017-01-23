@@ -13,11 +13,13 @@ Random beacon simulator
 
 ### Run linter(s)
 
+Run all tests:
+
 ```docker run --rm -it -v `pwd`/go:/go dfinity/build-env gometalinter ./...```
 
-As of Jan 22 (EOD)
+As of Jan 22 (EOD) this runs without warnings:
+
 ```gometalinter --deadline=10s --disable=gas --disable=gocyclo --disable=gotype --disable=golint --disable=interfacer ./...```
-runs without warnings.
 
 ## Run
 
