@@ -9,7 +9,7 @@ Random beacon simulator
 
 `cd rb`
 
-```docker run --rm -it -v `pwd`/go:/go dfinity/build-env go run sim.go```
+```docker run --rm -it -v `pwd`/go:/go dfinity/build-env go run main.go```
 
 ### Run linter(s)
 
