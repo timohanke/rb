@@ -1,26 +1,29 @@
 package sim
 
 import (
-	"fmt"
 	"bls"
-	"state"
+	"fmt"
 	"github.com/ethereum/go-ethereum/common"
-//	"github.com/davecgh/go-spew/spew"
+	"state"
+	//	"github.com/davecgh/go-spew/spew"
 )
 
+// BlockchainSimulator -- Encodes the state of all processes, groups and the blockchain
 type BlockchainSimulator struct {
-	groupSize  uint16
-	threshold  uint16
-	seed       bls.Rand
-	proc    []ProcessSimulator
-	group   []GroupSimulator
-	grpmap  map[common.Address]*GroupSimulator
-	chain   []state.State
+	groupSize uint16
+	threshold uint16
+	seed      bls.Rand
+	proc      []ProcessSimulator
+	group     []GroupSimulator
+	grpmap    map[common.Address]*GroupSimulator
+	chain     []state.State
 }
 
-// optional double-check
-var Double_check bool = false
-var Vvec         bool = false
+// DoubleCheck -- enable optional double-checks for verification
+var DoubleCheck = true
+
+// Vvec -- enable checks involving the verification vectors
+var Vvec = true
 
 // is this function needed?
 /*
@@ -30,6 +33,7 @@ func (sim *BlockchainSimulator) Init(seed bls.Rand, groupSize uint16, threshold 
 }
 */
 
+// InitProcs -- initialize the individual processes for the genesis block
 func (sim *BlockchainSimulator) InitProcs(n uint) {
 	sim.proc = make([]ProcessSimulator, n)
 	rsec := sim.seed.Ders("InitProcs_sec")
@@ -39,7 +43,8 @@ func (sim *BlockchainSimulator) InitProcs(n uint) {
 		fmt.Println(sim.proc[i].String())
 	}
 }
-	
+
+// InitGroups -- initialize the groups for the genesis block
 func (sim *BlockchainSimulator) InitGroups(n uint16) {
 	sim.group = make([]GroupSimulator, n)
 	sim.grpmap = make(map[common.Address]*GroupSimulator)
@@ -51,11 +56,11 @@ func (sim *BlockchainSimulator) InitGroups(n uint16) {
 	} */
 	// create n groups
 	for i := 0; i < int(n); i++ {
-		// choose members based on r 
+		// choose members based on r
 		/* groupinfo := s.NewRandomGroup(r.Deri(i), sim.groupSize)
-	        groupinfo.Log() */
-		// LATER: replace the following using groupinfo 
-		indices := r.Deri(i).RandomPerm(len(sim.proc),int(sim.groupSize))
+		   groupinfo.Log() */
+		// LATER: replace the following using groupinfo
+		indices := r.Deri(i).RandomPerm(len(sim.proc), int(sim.groupSize))
 		members := make([]*ProcessSimulator, sim.groupSize)
 		for j, idx := range indices {
 			members[j] = &(sim.proc[idx])
@@ -66,6 +71,8 @@ func (sim *BlockchainSimulator) InitGroups(n uint16) {
 	}
 }
 
+// NewBlockchainSimulator -- create a new blockchain simulation
+// set the seed and define parameters like group size, threshold, number of processes etc.
 func NewBlockchainSimulator(seed bls.Rand, groupSize uint16, threshold uint16, nProcesses uint, nGroups uint16) BlockchainSimulator {
 	sim := BlockchainSimulator{seed: seed, groupSize: groupSize, threshold: threshold}
 	sim.Log()
@@ -78,7 +85,7 @@ func NewBlockchainSimulator(seed bls.Rand, groupSize uint16, threshold uint16, n
 	fmt.Printf("--- Group setup: (m)%d\n", nGroups)
 	sim.InitGroups(nGroups)
 
-	// Build the genesis block 
+	// Build the genesis block
 	genesis := state.NewState()
 	for _, p := range sim.proc {
 		genesis.AddNode(p.reginfo)
@@ -98,6 +105,7 @@ func NewBlockchainSimulator(seed bls.Rand, groupSize uint16, threshold uint16, n
 	return sim
 }
 
+// Advance -- carry out the simulation for the given number of steps (blocks)
 func (sim *BlockchainSimulator) Advance(n uint, verbose bool) {
 	if n == 0 {
 		return
@@ -118,7 +126,7 @@ func (sim *BlockchainSimulator) Advance(n uint, verbose bool) {
 	}
 	*/
 	sig := g.Sign(tip.Rand().Bytes())
-	if Double_check {
+	if DoubleCheck {
 		if !bls.VerifySig(tip.GroupPubkey(a), tip.Rand().Bytes(), sig) {
 			fmt.Println("Error: group signature not valid.")
 		}
@@ -126,38 +134,42 @@ func (sim *BlockchainSimulator) Advance(n uint, verbose bool) {
 
 	// sign new state by group
 	newstate.SetSignature(sig)
-	
-	// append new state	
+
+	// append new state
 	sim.chain = append(sim.chain, newstate)
 	// recurse
-	sim.Advance(n-1, verbose) 
+	sim.Advance(n-1, verbose)
 	return
 }
 
+// Log -- print out a short form of the current state of the random beacon
 func (sim *BlockchainSimulator) Log() {
 	seed := sim.seed.Bytes()
 	fmt.Printf("BlkCh: (n)%d (k)%d (seed)%x\n", sim.groupSize, sim.threshold, seed[:8])
-/*
-	fmt.Println("  groups: ", len(sim.group))
-	fmt.Println("  processes: ", len(sim.proc))
-	fmt.Println("  chain height: ", len(sim.chain))
-	sim.chain[len(sim.chain)-1].Log()
-	for _, p := range sim.proc {
-		p.Log()
-	}
-	for _, g := range sim.group {
-		g.Log()
-	}
-*/
+	/*
+		fmt.Println("  groups: ", len(sim.group))
+		fmt.Println("  processes: ", len(sim.proc))
+		fmt.Println("  chain height: ", len(sim.chain))
+		sim.chain[len(sim.chain)-1].Log()
+		for _, p := range sim.proc {
+			p.Log()
+		}
+		for _, g := range sim.group {
+			g.Log()
+		}
+	*/
 }
 
+// Length -- return the current block height
 func (sim *BlockchainSimulator) Length() int {
 	return len(sim.chain)
 }
 
+// Tip -- return the current state at the tip of the chain
 func (sim *BlockchainSimulator) Tip() state.State {
 	return sim.chain[len(sim.chain)-1]
 }
 
+// Touch -- ???
 func (sim *BlockchainSimulator) Touch() {
 }
