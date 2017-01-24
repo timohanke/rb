@@ -13,7 +13,7 @@ Random beacon simulator
 
 ### Run linter(s)
 
-Run all tests:
+Run all linters:
 
 ```docker run --rm -it -v `pwd`/go:/go dfinity/build-env gometalinter ./...```
 
